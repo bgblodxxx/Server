@@ -9,7 +9,6 @@
 /* Reset & font */
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px;}
-
 /* Login */
 .login-container{width:90%;max-width:450px;background:rgba(30,41,59,0.8);backdrop-filter:blur(10px);padding:30px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.5);text-align:center;animation:fadeIn 0.8s ease;border:1px solid rgba(56,189,248,0.2);}
 .login-header{margin-bottom:25px;color:#38bdf8;font-size:28px;display:flex;flex-direction:column;align-items:center;gap:10px;}
@@ -149,7 +148,7 @@ async function loadMessages(){
         div.className = "message " + (isCurrentUser ? "message-outgoing" : "message-incoming");
         div.innerHTML = "<div class='message-user'>" + msg.user + "</div>" +
                         "<div class='message-text'>" + msg.text + "</div>" +
-                        "<div class='message-time'>" + formatTime(new Date()) + "</div>";
+                        "<div class='message-time'>" + formatTime(new Date(msg.time || Date.now())) + "</div>";
         chatBox.appendChild(div);
     }
     
@@ -169,7 +168,7 @@ async function sendMessage() {
     const res = await fetch(API_URL, {headers:{"X-Master-Key":API_KEY}});
     const data = await res.json();
     var messages = data.record.messages || [];
-    messages.push({user: username, text: text});
+    messages.push({user: username, text: text, time: new Date().toISOString()});
     
     await fetch(API_URL, {
       method: "PUT",
@@ -181,15 +180,12 @@ async function sendMessage() {
     });
     
     messageInput.value = "";
-    loadMessages();
+    loadMessages(); // Hanya load setelah kirim pesan
   } catch(e) {
     console.error("Error sending message:", e);
     showNotification("Failed to send message. Please try again.");
   }
 }
-
-// Auto refresh every 3 seconds
-setInterval(loadMessages, 3000);
 </script>
 
 </body>
